@@ -10,7 +10,7 @@ client_scripts {
 
 server_scripts {
     'server/utils.lua',
-    'server/functions.lua',
+    'server/queue.lua',
     'server/events.lua',
 }
 
