@@ -14,7 +14,7 @@ This queue system is designed for use with FiveM servers to manage player connec
 
 ### Installation
 
-1. Place the functions.lua, utils.lua, events.lua, and any other relevant files into your resource folder.
+1. Place the queue.lua, utils.lua, events.lua, and any other relevant files into your resource folder.
 
 2. Ensure your server's resource configuration file (__resource.lua or fxmanifest.lua) loads these files.
 
