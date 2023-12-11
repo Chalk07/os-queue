@@ -14,7 +14,7 @@ local function onPlayerConnecting(name, setKickReason, deferrals)
             while true do
                 -- check if the player has cancelled the connection
                 if not GetPlayerEndpoint(source) then
-                    dequeueByKey(queue, licenseIdentifier)
+                    dequeue(queue, licenseIdentifier)
                     deferrals.done()
                     break
                 end
@@ -43,5 +43,5 @@ RegisterServerEvent('removeFromQueue')
 AddEventHandler('removeFromQueue', function()
     local source = source
     local licenseIdentifier = getIdentifier(source, 'license')
-    dequeueByKey(queue, licenseIdentifier)
+    dequeue(queue, licenseIdentifier)
 end)
