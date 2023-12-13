@@ -10,13 +10,3 @@ end
 function getIdentifier(source, identifierType)
     return GetPlayerIdentifierByType(source, identifierType or 'license')
 end
-
--- Determines a player's position in the queue based on their unique identifier.
-function getQueuePosition(queue, itemKey)
-    for i, node in ipairs(queue.heap) do
-        if node.item == itemKey then
-            return i
-        end
-    end
-    return nil
-end
