@@ -1,61 +1,59 @@
--- Creates and returns an empty priority queue
-function createPriorityQueue()
-    return { heap = {} }
-end
+local queue = { heap = {} }
 
--- Adds an item to the priority queue with a given priority.
--- The heap property is maintained by performing a bubble-up operation.
-function enqueue(queue, item, priority)
+-- Enqueues an item with a given priority.
+function enqueue(item, priority)
     local node = { item = item, priority = priority, timestamp = os.time() }
     table.insert(queue.heap, node)
-    bubbleUp(queue.heap)
+    bubbleUp()
+    return true, "Enqueued item: " .. tostring(item)
 end
 
--- Removes and returns an item from the queue.
--- If itemKey is provided, removes the specified item;
--- otherwise, removes the highest priority item.
-function dequeue(queue, itemKey)
-    if #queue.heap == 0 then return nil end
-
-    local indexToRemove = 1
-    local removedItem
-
-    if itemKey then
-        for i, node in ipairs(queue.heap) do
-            if node.item == itemKey then
-                indexToRemove = i
-                break
-            end
-        end
-
-        if indexToRemove == nil then
-            return false, "Item not found in queue"
-        elseif indexToRemove == #queue.heap then
-            removedItem = table.remove(queue.heap).item
-            return true, removedItem
-        end
+-- Dequeues an item. If itemKey is given, removes that specific item; otherwise, removes the highest priority item.
+function dequeue(itemKey)
+    local queueSize = getQueueSize()
+    if queueSize == 0 then
+        return false, "Queue is empty"
     end
 
-    removedItem = queue.heap[indexToRemove].item
-    swap(queue.heap, indexToRemove, #queue.heap)
+    local indexToRemove = itemKey and getIndex(itemKey) or 1
+    if not indexToRemove then
+        return false, "Item not found in queue"
+    end
+
+    local removedItem = queue.heap[indexToRemove].item
+    swap(indexToRemove, queueSize)
     table.remove(queue.heap)
 
-    if #queue.heap > 0 then
-        bubbleUp(queue.heap, indexToRemove)
-        sinkDown(queue.heap, indexToRemove)
+    if queueSize > 1 then
+        bubbleUp(indexToRemove)
+        sinkDown(indexToRemove)
     end
 
-    return true, removedItem
+    return true, "Dequeued item: " .. tostring(removedItem)
 end
 
--- Internal function to adjust the position of an item upwards in the heap.
-function bubbleUp(heap, startIndex)
-    local currentIndex = startIndex or #heap
+-- Changes the priority of a specific item in the queue.
+function changePriority(itemKey, newPriority)
+    local index = getIndex(itemKey)
+    if not index then
+        return false, "Item not found in queue"
+    end
+
+    queue.heap[index].priority = newPriority
+    bubbleUp(index)
+    sinkDown(index)
+    return true, "Priority changed for item: " .. tostring(itemKey)
+end
+
+-- Adjusts the position of an item upwards in the heap to maintain the heap property.
+function bubbleUp(startIndex)
+    local queueSize = getQueueSize()
+    local currentIndex = startIndex or queueSize
 
     while currentIndex > 1 do
         local parentIndex = math.floor(currentIndex / 2)
-        if compareNodes(heap[currentIndex], heap[parentIndex]) then
-            swap(heap, currentIndex, parentIndex)
+        if compareNodes(queue.heap[currentIndex], queue.heap[parentIndex]) then
+            swap(currentIndex, parentIndex)
             currentIndex = parentIndex
         else
             break
@@ -63,149 +61,61 @@ function bubbleUp(heap, startIndex)
     end
 end
 
--- Internal function to adjust the position of an item downwards in the heap.
-function sinkDown(heap, startIndex)
+-- Adjusts the position of an item downwards in the heap to maintain the heap property.
+function sinkDown(startIndex)
+    local queueSize = getQueueSize()
     local currentIndex = startIndex or 1
-    local length = #heap
 
     while true do
         local leftChildIndex = 2 * currentIndex
         local rightChildIndex = leftChildIndex + 1
         local swapIndex = nil
 
-        if leftChildIndex <= length and compareNodes(heap[leftChildIndex], heap[currentIndex]) then
+        if leftChildIndex <= queueSize and compareNodes(queue.heap[leftChildIndex], queue.heap[currentIndex]) then
             swapIndex = leftChildIndex
         end
 
-        if rightChildIndex <= length and compareNodes(heap[rightChildIndex], heap[swapIndex or currentIndex]) then
+        if rightChildIndex <= queueSize and compareNodes(queue.heap[rightChildIndex], queue.heap[swapIndex or currentIndex]) then
             swapIndex = rightChildIndex
         end
 
         if not swapIndex then break end
 
-        swap(heap, currentIndex, swapIndex)
+        swap(currentIndex, swapIndex)
         currentIndex = swapIndex
     end
 end
 
 -- Compares two nodes in the heap based on priority and timestamp.
--- Returns true if the first node should be higher in the heap.
 function compareNodes(node1, node2)
-    if node1.priority > node2.priority then
-        return true
-    elseif node1.priority == node2.priority then
-        return node1.timestamp < node2.timestamp
-    else
-        return false
-    end
+    return node1.priority > node2.priority or (node1.priority == node2.priority and node1.timestamp < node2.timestamp)
 end
 
--- Swaps two items in the heap. Used during bubble-up and sink-down operations.
-function swap(heap, firstIndex, secondIndex)
-    heap[firstIndex], heap[secondIndex] = heap[secondIndex], heap[firstIndex]
-end-- Creates and returns an empty priority queue
-function createPriorityQueue()
-    return { heap = {} }
+-- Swaps two items in the heap.
+function swap(firstIndex, secondIndex)
+    queue.heap[firstIndex], queue.heap[secondIndex] = queue.heap[secondIndex], queue.heap[firstIndex]
 end
 
--- Adds an item to the priority queue with a given priority.
--- The heap property is maintained by performing a bubble-up operation.
-function enqueue(queue, item, priority)
-    local node = { item = item, priority = priority, timestamp = os.time() }
-    table.insert(queue.heap, node)
-    bubbleUp(queue.heap)
-end
-
--- Removes and returns an item from the queue.
--- If itemKey is provided, removes the specified item;
--- otherwise, removes the highest priority item.
-function dequeue(queue, itemKey)
-    if #queue.heap == 0 then return nil end
-
-    local indexToRemove = 1
-    local removedItem
-
-    if itemKey then
-        for i, node in ipairs(queue.heap) do
-            if node.item == itemKey then
-                indexToRemove = i
-                break
-            end
-        end
-
-        if indexToRemove == nil then
-            return false, "Item not found in queue"
-        elseif indexToRemove == #queue.heap then
-            removedItem = table.remove(queue.heap).item
-            return true, removedItem
+-- Finds the index of an item by its key.
+function getIndex(itemKey)
+    for i, node in ipairs(queue.heap) do
+        if node.item == itemKey then
+            return i
         end
     end
-
-    removedItem = queue.heap[indexToRemove].item
-    swap(queue.heap, indexToRemove, #queue.heap)
-    table.remove(queue.heap)
-
-    if #queue.heap > 0 then
-        bubbleUp(queue.heap, indexToRemove)
-        sinkDown(queue.heap, indexToRemove)
-    end
-
-    return true, removedItem
+    return nil
 end
 
--- Internal function to adjust the position of an item upwards in the heap.
-function bubbleUp(heap, startIndex)
-    local currentIndex = startIndex or #heap
-
-    while currentIndex > 1 do
-        local parentIndex = math.floor(currentIndex / 2)
-        if compareNodes(heap[currentIndex], heap[parentIndex]) then
-            swap(heap, currentIndex, parentIndex)
-            currentIndex = parentIndex
-        else
-            break
-        end
-    end
+-- Returns the total number of items in the queue.
+function getQueueSize()
+    return #queue.heap, "Total items in queue: " .. #queue.heap
 end
 
--- Internal function to adjust the position of an item downwards in the heap.
-function sinkDown(heap, startIndex)
-    local currentIndex = startIndex or 1
-    local length = #heap
-
-    while true do
-        local leftChildIndex = 2 * currentIndex
-        local rightChildIndex = leftChildIndex + 1
-        local swapIndex = nil
-
-        if leftChildIndex <= length and compareNodes(heap[leftChildIndex], heap[currentIndex]) then
-            swapIndex = leftChildIndex
-        end
-
-        if rightChildIndex <= length and compareNodes(heap[rightChildIndex], heap[swapIndex or currentIndex]) then
-            swapIndex = rightChildIndex
-        end
-
-        if not swapIndex then break end
-
-        swap(heap, currentIndex, swapIndex)
-        currentIndex = swapIndex
-    end
+-- Returns a player's position in the queue based on their unique identifier.
+function getQueuePosition(itemKey)
+    local index = getIndex(itemKey)
+    return index, index and "Position in queue: " .. index or "Item not found in queue"
 end
 
--- Compares two nodes in the heap based on priority and timestamp.
--- Returns true if the first node should be higher in the heap.
-function compareNodes(node1, node2)
-    if node1.priority > node2.priority then
-        return true
-    elseif node1.priority == node2.priority then
-        return node1.timestamp < node2.timestamp
-    else
-        return false
-    end
-end
-
--- Swaps two items in the heap. Used during bubble-up and sink-down operations.
-function swap(heap, firstIndex, secondIndex)
-    heap[firstIndex], heap[secondIndex] = heap[secondIndex], heap[firstIndex]
-end
+-- Export the changePriority function
+exports('changePriority', changePriority)
