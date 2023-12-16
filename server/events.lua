@@ -1,37 +1,37 @@
-local function onPlayerConnecting(name, setKickReason, deferrals)
+local function OnPlayerConnecting(name, setKickReason, deferrals)
     local source = source
-    local licenseIdentifier = getIdentifier(source, 'license')
+    local licenseIdentifier = GetIdentifier(source, 'license')
 
     deferrals.defer()
 
-    enqueue(licenseIdentifier, 0)
+    AddPlayerToQueue(licenseIdentifier, 0)
 
-    CreateThread(function()
+    Citizen.CreateThread(function()
         while true do
-            Wait(3000)
+            Citizen.Wait(3000)
 
             -- Check if the player has cancelled the connection
             if not GetPlayerEndpoint(source) then
-                dequeue(licenseIdentifier)
+                RemovePlayerFromQueue(licenseIdentifier)
                 deferrals.done()
                 break
             end
 
-            -- Continuously check the player's position in the queue
-            local position = getQueuePosition(licenseIdentifier)
-            if position == 1 and not isServerFull() then
+            -- Continuously check the players position in the queue
+            local playerPosition = GetPlayerQueuePosition(licenseIdentifier)
+            if playerPosition == 1 and not IsServerFull() then
                 deferrals.done()
                 break
-            elseif position then
-                local queueSize = getQueueSize()
-                deferrals.update(string.format("You are %d out of %d players in queue.", position, queueSize))
+            elseif playerPosition then
+                local queueSize = GetQueueSize()
+                deferrals.update(string.format("You are %d out of %d players in queue."), playerPosition, queueSize)
             end
         end
     end)
 end
 
-AddEventHandler('playerConnecting', onPlayerConnecting)
+AddEventHandler('playerConnecting', OnPlayerConnecting)
 
 AddEventHandler('playerJoining', function()
-    dequeue()
+    RemovePlayerFromQueue()
 end)
