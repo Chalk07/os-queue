@@ -34,16 +34,23 @@ function RemovePlayerFromQueue(playerId)
     return true, "Player removed from queue: " .. tostring(removedPlayer)
 end
 
--- Updates the priority of a specific player in the queue
-function UpdatePlayerPriority(playerId, newPriority)
+-- Updates the priority of a specific player both in the queue and optionally in the database.
+function UpdatePlayerPriority(playerId, newPriority, saveToDatabase)
     local playerIndex = GetPlayerQueueIndex(playerId)
-    if not playerIndex then
-        return false, "Player not found in queue"
+
+    if playerIndex then
+        playerQueue.playerHeap[playerIndex].priority = newPriority
+        MoveUpInQueue(playerIndex)
+        MoveDownInQueue(playerIndex)
     end
 
-    playerQueue.playerHeap[playerIndex].priority = newPriority
-    MoveUpInQueue(playerIndex)
-    MoveDownInQueue(playerIndex)
+    if saveToDatabase == "true" then
+        local result = MySQL.insert.await('INSERT INTO priority (license, priority_level) VALUES (?, ?) ON DUPLICATE KEY UPDATE priority_level = VALUES(priority_level)', { playerId, newPriority })
+        if not result then
+            return false, "Failed to update database priority for player: " .. tostring(playerId)
+        end
+    end
+
     return true, "Priority changed for player: " .. tostring(playerId)
 end
 
