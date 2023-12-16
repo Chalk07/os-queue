@@ -1,60 +1,60 @@
-queue = { heap = {} }
+local playerQueue = { playerHeap = {} }
 
--- Enqueues an item with a given priority.
-function enqueue(item, priority)
-    local node = { item = item, priority = priority, timestamp = os.time() }
-    table.insert(queue.heap, node)
-    bubbleUp()
-    return true, "Enqueued item: " .. tostring(item)
+-- Adds a player to the queue with a given priority
+function AddPlayerToQueue(playerId, priority)
+    local playerNode = { playerId = playerId, priority = priority, timestamp = os.time() }
+    table.insert(playerQueue.playerHeap, playerNode)
+    MoveUpInQueue()
+    return true, "Player added to queue: " .. tostring(playerId)
 end
 
--- Dequeues an item. If itemKey is given, removes that specific item; otherwise, removes the highest priority item.
-function dequeue(itemKey)
-    if #queue.heap == 0 then
+-- Removes a player from the queue. If playerId is given, remove that specific player; otherwise, remove the highest priority player
+function RemovePlayerFromQueue(playerId)
+    if #playerQueue.playerHeap == 0 then
         return false, "Queue is empty"
     end
 
     local indexToRemove = 1
-    if itemKey then
-        indexToRemove = getIndex(itemKey)
+    if playerId then
+        indexToRemove = GetPlayerQueueIndex(playerId)
         if not indexToRemove then
-            return false, "Item not found in queue"
+            return false, "Player not found in queue"
         end
     end
 
-    local removedItem = queue.heap[indexToRemove].item
-    swap(indexToRemove, #queue.heap)
-    table.remove(queue.heap)
+    local removedPlayer = playerQueue.playerHeap[indexToRemove].playerId
+    SwapQueueNodes(indexToRemove, #playerQueue.playerHeap)
+    table.remove(playerQueue.playerHeap)
 
-    if #queue.heap > 1 then
-        bubbleUp(indexToRemove)
-        sinkDown(indexToRemove)
+    if #playerQueue.playerHeap > 1 then
+        MoveUpInQueue(indexToRemove)
+        MoveDownInQueue(indexToRemove)
     end
 
-    return true, "Dequeued item: " .. tostring(removedItem)
+    return true, "Player removed from queue: " .. tostring(removedPlayer)
 end
 
--- Changes the priority of a specific item in the queue.
-function changePriority(itemKey, newPriority)
-    local index = getIndex(itemKey)
-    if not index then
-        return false, "Item not found in queue"
+-- Updates the priority of a specific player in the queue
+function UpdatePlayerPriority(playerId, newPriority)
+    local playerIndex = GetPlayerQueueIndex(playerId)
+    if not playerIndex then
+        return false, "Player not found in queue"
     end
 
-    queue.heap[index].priority = newPriority
-    bubbleUp(index)
-    sinkDown(index)
-    return true, "Priority changed for item: " .. tostring(itemKey)
+    playerQueue.playerHeap[playerIndex].priority = newPriority
+    MoveUpInQueue(playerIndex)
+    MoveDownInQueue(playerIndex)
+    return true, "Priority changed for player: " .. tostring(playerId)
 end
 
--- Adjusts the position of an item upwards in the heap to maintain the heap property.
-function bubbleUp(startIndex)
-    local currentIndex = startIndex or #queue.heap
+-- Moves a player upwards in the queue to maintain the queues order
+function MoveUpInQueue(startIndex)
+    local currentIndex = startIndex or #playerQueue.playerHeap
 
     while currentIndex > 1 do
         local parentIndex = math.floor(currentIndex / 2)
-        if compareNodes(queue.heap[currentIndex], queue.heap[parentIndex]) then
-            swap(currentIndex, parentIndex)
+        if CompareQueueNodes(playerQueue.playerHeap[currentIndex], playerQueue.playerHeap[parentIndex]) then
+            SwapQueueNodes(currentIndex, parentIndex)
             currentIndex = parentIndex
         else
             break
@@ -62,8 +62,8 @@ function bubbleUp(startIndex)
     end
 end
 
--- Adjusts the position of an item downwards in the heap to maintain the heap property.
-function sinkDown(startIndex)
+-- Moves a player down in the queue to maintain the queues order
+function MoveDownInQueue(startIndex)
     local currentIndex = startIndex or 1
 
     while true do
@@ -71,51 +71,50 @@ function sinkDown(startIndex)
         local rightChildIndex = leftChildIndex + 1
         local swapIndex = nil
 
-        if leftChildIndex <= #queue.heap and compareNodes(queue.heap[leftChildIndex], queue.heap[currentIndex]) then
+        if leftChildIndex <= #playerQueue.playerHeap and CompareQueueNodes(playerQueue.playerHeap[leftChildIndex], playerQueue.playerHeap[currentIndex]) then
             swapIndex = leftChildIndex
         end
 
-        if rightChildIndex <= #queue.heap and compareNodes(queue.heap[rightChildIndex], queue.heap[swapIndex or currentIndex]) then
+        if rightChildIndex <= #playerQueue.playerHeap and CompareQueueNodes(playerQueue.playerHeap[rightChildIndex], playerQueue.playerHeap[swapIndex or currentIndex]) then
             swapIndex = rightChildIndex
         end
 
         if not swapIndex then break end
 
-        swap(currentIndex, swapIndex)
+        SwapQueueNodes(currentIndex, swapIndex)
         currentIndex = swapIndex
     end
 end
 
--- Compares two nodes in the heap based on priority and timestamp.
-function compareNodes(node1, node2)
-    return node1.priority > node2.priority or (node1.priority == node2.priority and node1.timestamp < node2.timestamp)
+-- Compares two nodes in the queue based on priority and timestamp
+function CompareQueueNodes(firstNode, secondNode)
+    return firstNode.priority > secondNode.priority or (firstNode.priority == secondNode.priority and firstNode.timestamp < secondNode.timestamp)
 end
 
--- Swaps two items in the heap.
-function swap(firstIndex, secondIndex)
-    queue.heap[firstIndex], queue.heap[secondIndex] = queue.heap[secondIndex], queue.heap[firstIndex]
+-- Swaps the position of two nodes in the queue
+function SwapQueueNodes(firstIndex, secondIndex)
+    playerQueue.playerHeap[firstIndex], playerQueue.playerHeap[secondIndex] = playerQueue.playerHeap[secondIndex], playerQueue.playerHeap[firstIndex]
 end
 
--- Finds the index of an item by its key.
-function getIndex(itemKey)
-    for i, node in ipairs(queue.heap) do
-        if node.item == itemKey then
+-- Finds a players index in the queue based on their id
+function GetPlayerQueueIndex(playerId)
+    for i, playerNode in ipairs(playerQueue.playerHeap) do
+        if playerNode.playerId == playerId then
             return i
         end
     end
     return nil
 end
 
--- Returns the total number of items in the queue.
-function getQueueSize()
-    return #queue.heap, "Total items in queue: " .. #queue.heap
+-- Returns the total number of players in the queue
+function GetQueueSize()
+    return #playerQueue.playerHeap, "Total players in queue: " .. #playerQueue.playerHeap
 end
 
--- Returns a player's position in the queue based on their unique identifier.
-function getQueuePosition(itemKey)
-    local index = getIndex(itemKey)
-    return index, index and "Position in queue: " .. index or "Item not found in queue"
+-- Returns the players position in the queue based on their id
+function GetPlayerQueuePosition(playerId)
+    local playerIndex = GetPlayerQueueIndex(playerId)
+    return playerIndex, playerIndex and "Position in queue: " .. playerIndex or "Player not found in queue"
 end
 
--- Export the changePriority function
-exports('changePriority', changePriority)
+exports('UpdatePlayerPriority', UpdatePlayerPriority)
