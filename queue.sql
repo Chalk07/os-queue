@@ -3,4 +3,4 @@ CREATE TABLE IF NOT EXISTS `priority` (
 	`license` VARCHAR(50) NOT NULL,
 	`priority_level` INT(10) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
-	) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=1;
