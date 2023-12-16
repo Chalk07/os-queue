@@ -33,7 +33,5 @@ end
 AddEventHandler('playerConnecting', onPlayerConnecting)
 
 AddEventHandler('playerJoining', function()
-    local source = source
-    local licenseIdentifier = getIdentifier(source, 'license')
     dequeue()
 end)
