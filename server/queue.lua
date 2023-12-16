@@ -1,4 +1,4 @@
-local queue = { heap = {} }
+queue = { heap = {} }
 
 -- Enqueues an item with a given priority.
 function enqueue(item, priority)
@@ -10,21 +10,23 @@ end
 
 -- Dequeues an item. If itemKey is given, removes that specific item; otherwise, removes the highest priority item.
 function dequeue(itemKey)
-    local queueSize = getQueueSize()
-    if queueSize == 0 then
+    if #queue.heap == 0 then
         return false, "Queue is empty"
     end
 
-    local indexToRemove = itemKey and getIndex(itemKey) or 1
-    if not indexToRemove then
-        return false, "Item not found in queue"
+    local indexToRemove = 1
+    if itemKey then
+        indexToRemove = getIndex(itemKey)
+        if not indexToRemove then
+            return false, "Item not found in queue"
+        end
     end
 
     local removedItem = queue.heap[indexToRemove].item
-    swap(indexToRemove, queueSize)
+    swap(indexToRemove, #queue.heap)
     table.remove(queue.heap)
 
-    if queueSize > 1 then
+    if #queue.heap > 1 then
         bubbleUp(indexToRemove)
         sinkDown(indexToRemove)
     end
@@ -47,8 +49,7 @@ end
 
 -- Adjusts the position of an item upwards in the heap to maintain the heap property.
 function bubbleUp(startIndex)
-    local queueSize = getQueueSize()
-    local currentIndex = startIndex or queueSize
+    local currentIndex = startIndex or #queue.heap
 
     while currentIndex > 1 do
         local parentIndex = math.floor(currentIndex / 2)
@@ -63,7 +64,6 @@ end
 
 -- Adjusts the position of an item downwards in the heap to maintain the heap property.
 function sinkDown(startIndex)
-    local queueSize = getQueueSize()
     local currentIndex = startIndex or 1
 
     while true do
@@ -71,11 +71,11 @@ function sinkDown(startIndex)
         local rightChildIndex = leftChildIndex + 1
         local swapIndex = nil
 
-        if leftChildIndex <= queueSize and compareNodes(queue.heap[leftChildIndex], queue.heap[currentIndex]) then
+        if leftChildIndex <= #queue.heap and compareNodes(queue.heap[leftChildIndex], queue.heap[currentIndex]) then
             swapIndex = leftChildIndex
         end
 
-        if rightChildIndex <= queueSize and compareNodes(queue.heap[rightChildIndex], queue.heap[swapIndex or currentIndex]) then
+        if rightChildIndex <= #queue.heap and compareNodes(queue.heap[rightChildIndex], queue.heap[swapIndex or currentIndex]) then
             swapIndex = rightChildIndex
         end
 
