@@ -6,7 +6,7 @@ This queue system is designed for use with FiveM servers to manage player connec
 
 ### Features
 
-* Prioritized Queueing: Manage player connections based on priority levels. While currently set to treat all players equally (priority 0), the system is designed to accommodate different priority levels.
+* Prioritized Queueing: Manage player connections based on priority levels. (higher is better priority)
 
 * Real-Time Queue Updates: Provide players in the queue with real-time updates on their position.
 
