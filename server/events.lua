@@ -4,7 +4,8 @@ local function OnPlayerConnecting(name, setKickReason, deferrals)
 
     deferrals.defer()
 
-    AddPlayerToQueue(licenseIdentifier, 0)
+    local playerPriority = GetPlayerPriority(source)
+    AddPlayerToQueue(licenseIdentifier, playerPriority)
 
     Citizen.CreateThread(function()
         while true do
