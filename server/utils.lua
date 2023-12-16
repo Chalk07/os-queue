@@ -1,12 +1,12 @@
--- Determines if the server is currently at full capacity based on the maximum number of clients allowed.
-function isServerFull()
+-- Checks if the server is full based on the maximum number of clients allowed
+function IsServerFull()
     local maxClients = GetConvarInt('sv_maxclients', 32)
     local currentPlayerCount = #GetPlayers()
 
     return currentPlayerCount >= maxClients
 end
 
--- Retrieves a specific type of identifier for a player, defaulting to 'license' if not specified.
-function getIdentifier(source, identifierType)
+-- Returns the specified identifier for a player
+function GetIdentifier(source, identifierType)
     return GetPlayerIdentifierByType(source, identifierType or 'license')
 end
