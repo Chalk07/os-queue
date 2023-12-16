@@ -24,7 +24,7 @@ local function OnPlayerConnecting(name, setKickReason, deferrals)
                 break
             elseif playerPosition then
                 local queueSize = GetQueueSize()
-                deferrals.update(string.format("You are %d out of %d players in queue."), playerPosition, queueSize)
+                deferrals.update(string.format("You are %d out of %d players in queue.", playerPosition, queueSize))
             end
         end
     end)
