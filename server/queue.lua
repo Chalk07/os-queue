@@ -42,13 +42,12 @@ function UpdatePlayerPriority(playerId, newPriority, saveToDatabase)
         playerQueue.playerHeap[playerIndex].priority = newPriority
         MoveUpInQueue(playerIndex)
         MoveDownInQueue(playerIndex)
+    elseif saveToDatabase ~= "true" then
+        return false, "Player not found in queue and no database update requested for player: " .. tostring(playerId)
     end
 
     if saveToDatabase == "true" then
-        local result = MySQL.insert.await('INSERT INTO priority (license, priority_level) VALUES (?, ?) ON DUPLICATE KEY UPDATE priority_level = VALUES(priority_level)', { playerId, newPriority })
-        if not result then
-            return false, "Failed to update database priority for player: " .. tostring(playerId)
-        end
+        MySQL.insert.await('INSERT INTO priority (license, priority_level) VALUES (?, ?) ON DUPLICATE KEY UPDATE priority_level = VALUES(priority_level)', { playerId, newPriority })
     end
 
     return true, "Priority changed for player: " .. tostring(playerId)
